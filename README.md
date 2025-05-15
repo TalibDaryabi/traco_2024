@@ -1,36 +1,90 @@
-# TRACO repository
-Hello to the TRACO Seminar Repository,
-here you will find everything that you need to train and test your model.
+# Grok - Video Processing and Hexagon Detection System
 
-## Data
-We give you a reference solution to show you one very crapy way how you could do it. 
-There is a requirements.txt which lets you create a suitable env.
-In the folder training is all the training data for you model.
-In the folder leaderboard data are 5 videos. For each you should creat a prediction csv and upload them to our website to get a leaderboard score.
-There are also the submission guidelines to help you upload the csv.
+## Project Overview
+This project is designed to process videos and detect hexagonal patterns using a deep learning model (ResNet-UNet architecture). The system analyzes video frames, identifies hexagons, and assigns IDs to them in a specific order.
 
-## Annotation GUI
-The annotation GUI is available in the python file `traco_annotation_gui.py`. It can be run with the following command:
+## Project Structure
+```
+grok/
+├── config.py           # Configuration settings (paths and parameters)
+├── main.py            # Main execution script
+├── models/            # Neural network model definitions
+│   └── resnet_unet.py # ResNet-UNet model architecture
+├── data/              # Data handling utilities
+│   └── video_handler.py # Video processing functions
+├── utils/             # Utility functions
+│   ├── processing.py  # ID assignment and processing utilities
+│   └── helpers.py     # Helper functions for logging
+├── losses/           # Loss functions for model training
+├── scripts/          # Additional utility scripts
+└── annotations_/     # Directory for annotations/ground truth
+```
 
-```python traco_annotation_gui.py```
+## Key Components
+1. **Model**: Uses a ResNet-UNet architecture for hexagon detection
+2. **Video Processing**: Handles frame-by-frame analysis of input videos
+3. **ID Assignment**: Assigns unique IDs to detected hexagons
+4. **Logging**: Maintains execution logs for debugging and monitoring
 
-We recommend using Python 3.6 or higher. The GUI requires the following packages:
-- PyQt6
-- Pandas
-- imageio (```pip install imageio-ffmpeg```)
-- pyqtgraph
-- matplotlib
-- numpy
+## Prerequisites
+- Python 3.x
+- PyTorch
+- OpenCV (cv2)
+- CUDA-capable GPU (optional, but recommended for faster processing)
 
-Annotate the videos by left-clicking on the head of a HexBug. Note that you have to select the HexBug ID on the right 
-side of the GUI before annotating. You can also use A and D keys to move the video forward and backward frame by frame.
+## Configuration
+The `config.py` file contains important parameters:
+- `MODEL_PATH`: Path to the trained model weights (reference-model.pth)
+- `VIDEO_PATH`: Path to the input video file
+- `NUM_HEX`: Number of hexagons to detect (default: 3)
 
-## Score
-The file get_score.py lets you evaluate your model to see which score you would get. For your better understanding we added a log and if a video is available you can also crate a video for better understanding:
-      - if you want to have a log for your score calculation set log = True
-      - if you want to have a video of you score calculation set vid = True
-        -> csv must be same number of frames and there has to be a mp4 video in the same folder with the groud trouth
-You can call it like this: score = get_score(str(pred_path / file), str(gt_path / file), log=True, cid = False)
+## How to Run
 
-## Reference Solution
-We suggest you to run the solution on Google Colab and connect that to you google drive in order to load the model and the videos.
+### Single Video Processing
+1. Ensure the model file (reference-model.pth) is in the correct location
+2. Update VIDEO_PATH in config.py to point to your input video
+3. Run the main script:
+```bash
+python main.py
+```
+
+### Processing Multiple Videos
+To process multiple videos, you would need to modify the code slightly:
+1. Create a new script (e.g., `batch_process.py`) that:
+   - Takes a directory of videos as input
+   - Iterates through each video file
+   - Updates VIDEO_PATH for each iteration
+   - Calls the main processing function
+
+## Processing Flow
+1. **Model Loading**: 
+   - Loads the pre-trained ResNet-UNet model
+   - Moves model to GPU if available
+
+2. **Video Processing**:
+   - Reads video frames
+   - Processes each frame through the neural network
+   - Detects hexagonal patterns
+   - Extracts position information
+
+3. **ID Assignment**:
+   - Takes unordered position data
+   - Assigns ordered IDs to detected hexagons
+   - Logs the results
+
+## Output
+The system produces:
+- Processed video frames with detected hexagons
+- Ordered list of hexagon positions
+- Log messages for tracking execution
+
+## Error Handling
+The system includes robust error handling for:
+- Model loading failures
+- Video processing issues
+- Invalid configurations
+
+## Notes
+- The system is currently configured for processing one video at a time
+- For batch processing of multiple videos, code modifications would be needed
+- GPU acceleration is automatically used if available
