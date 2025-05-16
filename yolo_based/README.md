@@ -1,5 +1,148 @@
 # Hexbug Detection and Head Localization Pipeline
 
+## Project Status and Roadmap
+
+This repository implements a robust, competition-ready pipeline for detecting and tracking hexbugs in video frames, with precise head localization. The project is modular, reproducible, and supports best practices for training, evaluation, and inference.
+
+### **What Has Been Done**
+- Data preparation scripts for YOLO and regression datasets (robust, handles all edge cases)
+- YOLOv8 bug detector training and validation
+- Head regressor model training (ResNet, MobileNet, EfficientNet, etc.)
+- Modular loss functions, data augmentation, early stopping, LR scheduling, TensorBoard
+- Hyperparameter tuning (Optuna) and cross-validation (with results/plots saved)
+- Full pipeline integration: detection → regression → (SORT) tracking → output
+- Output CSV with consistent bug IDs (track IDs) for each frame
+- All scripts are CLI-driven and documented
+- Project is versioned and clean (processed data ignored)
+
+### **What Remains / Optional Improvements**
+- (Optional) More advanced post-processing, ensembling, or error analysis
+- (Optional) Automated leaderboard/test submission script
+- (Optional) More visualizations or reporting
+
+---
+
+## Workflow Overview
+
+| Step                        | Status      | Notes                                  |
+|-----------------------------|-------------|----------------------------------------|
+| Data Preparation            | ✅ Complete | Robust, all edge cases handled         |
+| YOLO Training               | ✅ Complete | Scripted, documented                   |
+| Regression Model Training   | ✅ Complete | Modular, CLI, best practices           |
+| Hyperparameter Tuning       | ✅ Complete | Optuna, saves best params              |
+| Cross-Validation            | ✅ Complete | Saves results, plots, robust           |
+| Final Model Training        | ✅ Complete | Clear workflow, reproducible           |
+| Visualization               | ✅ Complete | Scripted, documented                   |
+| Full Pipeline Integration   | ✅ Complete | End-to-end script, tracking enabled    |
+| Test/Leaderboard Evaluation | 🟡 Pending  | To be run after pipeline integration   |
+| Optional Improvements       | 🟡 Optional | As needed for competition/performance  |
+
+---
+
+## Step-by-Step Instructions
+
+### 1. **Data Preparation**
+Prepare both YOLO and regression datasets:
+```sh
+python scripts/prepare_data.py
+```
+- This will create processed data for YOLO and head regression in `data/processed/` and `data/head_regression/`.
+
+### 2. **YOLO Training**
+Train the YOLO bug detector:
+```sh
+python scripts/train_detector.py --epochs 50 --save_dir models/detection
+```
+- Edit `config/yolo_config.yaml` for more options.
+- Produces: `models/detection/hexbug_detector.pt`
+
+### 3. **Head Regression Model: Training & Selection**
+
+#### a. **Hyperparameter Tuning**
+```sh
+python scripts/tune_head_regressor_optuna.py
+```
+- Notes best parameters to `best_parameters_optuna.txt`.
+
+#### b. **Cross-Validation**
+```sh
+python scripts/cross_validate_head_regressor.py --folds 5 --epochs 30 --arch resnet34 --img_size 64 --batch_size 32 --lr 0.001 --loss huber_loss --data_augmentation
+```
+- Use the best parameters from tuning.
+- Results and plot saved to `crossval_results.txt` and `crossval_val_losses.png`.
+
+#### c. **Final Training**
+```sh
+python scripts/train_head_regressor.py --epochs 50 --arch resnet34 --img_size 64 --batch_size 32 --lr 0.001 --loss huber_loss --data_augmentation --save_dir models/head_regression
+```
+- Produces: `models/head_regression/best_head_regressor.pt`
+
+**Important:**
+- Always use the same `--arch` and `--img_size` for both training and inference. Save these in a config file for reproducibility.
+
+### 4. **Full Pipeline Inference (Detection + Regression + Tracking)**
+Run the full pipeline on a new video:
+```sh
+python scripts/run_full_pipeline.py \
+  --video path/to/new_video.mp4 \
+  --yolo_model models/detection/hexbug_detector.pt \
+  --regressor_model models/head_regression/best_head_regressor.pt \
+  --regressor_arch resnet34 \
+  --regressor_img_size 64 \
+  --output_csv results/pipeline_results.csv
+```
+- **SORT tracking is always enabled**: every bug in every frame is assigned a consistent `bug_id`.
+- Output CSV columns: `frame`, `bug_id`, `head_x`, `head_y`, `confidence`, `class_id`.
+- **You must use the same architecture and image size as in training.**
+
+### 5. **Visualization**
+Visualize regression predictions:
+```sh
+python scripts/visualize_regression_predictions.py \
+  --model_path models/head_regression/best_head_regressor.pt \
+  --data_dir data/head_regression \
+  --arch resnet34 \
+  --img_size 64 \
+  --num_samples 16 \
+  --save_dir results/
+```
+
+---
+
+## **Best Practices & Options**
+- Always match architecture and image size between training and inference.
+- Use cross-validation and Optuna for robust model selection.
+- Use TensorBoard (`--tensorboard`) for live monitoring.
+- Visualize predictions to check for systematic errors.
+- Save your best parameters in a config file for reproducibility.
+- Processed data is ignored by git for a clean repo.
+
+---
+
+## **For New Users: Quick Start**
+1. Prepare data: `python scripts/prepare_data.py`
+2. Train YOLO: `python scripts/train_detector.py --epochs 50 --save_dir models/detection`
+3. Tune and train regressor: see steps 3a–3c above
+4. Run full pipeline: see step 4 above
+5. Visualize and analyze results
+
+---
+
+## **FAQ**
+- **Q: Why do I need to specify architecture and image size at inference?**
+  - A: The model weights only work with the same architecture and input size as used in training. Always use the same values for both.
+- **Q: How do I get consistent bug IDs?**
+  - A: SORT tracking is always enabled in the pipeline, so each bug is assigned a unique, consistent ID across frames.
+- **Q: Can I process a folder of videos?**
+  - A: The current script processes one video at a time. For batch processing, adapt the script or ask for an extension.
+
+---
+
+## **Contact & Contributions**
+- For questions, improvements, or contributions, open an issue or pull request.
+
+---
+
 ## Overview
 
 This project implements a two-stage pipeline for robust hexbug detection and precise head localization:
