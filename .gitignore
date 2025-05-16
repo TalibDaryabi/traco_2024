@@ -61,4 +61,7 @@ logs/
 !predictions.csv
 !predictions.json
 !training.zip
-!test.zip 
+!test.zip
+
+# Additional directory
+yolo_based/data/processed/ 
