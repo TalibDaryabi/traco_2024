@@ -1,0 +1,57 @@
+# YOLOv8 configuration for hexbug detection
+
+# Dataset paths
+path: "E:/Seminar_project/traco_2024/yolo_based/data/processed"  # dataset root dir (relative to project root)
+train: "images/train"  # train images (relative to 'path')
+val: "images/val"  # val images (relative to 'path')
+test: "images/test"  # test images (optional)
+
+# Classes
+names:
+  0: "hexbug"
+
+# Training parameters
+task: "detect"  # task type (detect, segment, classify)
+mode: "train"  # mode (train, val, predict)
+model: "yolov8n.pt"  # model name or path
+epochs: 100  # number of epochs
+batch: 16  # batch size
+imgsz: 640  # image size
+device: "auto"  # device to run on (auto, cpu, 0, 0,1,2,3, etc.)
+workers: 8  # number of worker threads
+project: "models/detection"  # save to project/name (relative to project root)
+name: "hexbug_detector"  # save to project/name
+exist_ok: true  # existing project/name ok, do not increment
+pretrained: true  # use pretrained model
+optimizer: "AdamW"  # optimizer (SGD, Adam, AdamW, etc.)
+verbose: true  # print verbose output
+seed: 42  # random seed for reproducibility
+deterministic: true  # deterministic training
+
+# Augmentation parameters
+hsv_h: 0.015  # HSV-Hue augmentation
+hsv_s: 0.7  # HSV-Saturation augmentation
+hsv_v: 0.4  # HSV-Value augmentation
+degrees: 0.0  # image rotation (+/- deg)
+translate: 0.1  # image translation (+/- fraction)
+scale: 0.5  # image scale (+/- gain)
+shear: 0.0  # image shear (+/- deg)
+perspective: 0.0  # image perspective (+/- fraction), range 0-0.001
+flipud: 0.0  # image flip up-down (probability)
+fliplr: 0.5  # image flip left-right (probability)
+mosaic: 1.0  # image mosaic (probability)
+mixup: 0.0  # image mixup (probability)
+copy_paste: 0.0  # segment copy-paste (probability)
+
+# Loss parameters
+box: 7.5  # box loss gain
+cls: 0.5  # cls loss gain
+dfl: 1.5  # dfl loss gain
+pose: 12.0  # pose loss gain
+kobj: 1.0  # keypoint obj loss gain
+label_smoothing: 0.0  # label smoothing epsilon
+nbs: 64  # nominal batch size
+overlap_mask: true  # masks should overlap during training
+mask_ratio: 4  # mask downsample ratio
+dropout: 0.0  # use dropout regularization
+# val: true  # validate training results 
